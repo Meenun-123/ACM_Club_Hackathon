@@ -8,6 +8,8 @@ import SchedulePage from '@/pages/SchedulePage';
 import CoordinatorsPage from '@/pages/CoordinatorsPage';
 import RegisterPage from '@/pages/RegisterPage';
 import SuccessPage from '@/pages/SuccessPage';
+import AdminLoginPage from '@/pages/AdminLoginPage';
+import AdminDashboardPage from '@/pages/AdminDashboardPage';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
           <Route path="/coordinators" element={<CoordinatorsPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register/success" element={<SuccessPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="*" element={<HomePage />} />
         </Route>
       </Routes>

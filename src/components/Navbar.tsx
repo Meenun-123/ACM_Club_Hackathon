@@ -74,13 +74,21 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop CTA */}
-          <Link
-            to="/register"
-            className="hidden lg:inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-xl hover:from-orange-400 hover:to-orange-500 glow-orange hover:shadow-[0_0_36px_rgba(249,115,22,0.5)] hover:-translate-y-0.5 transition-all duration-300"
-          >
-            REGISTER NOW
-          </Link>
+          {/* Desktop actions */}
+          <div className="hidden lg:flex items-center gap-3">
+            <Link
+              to="/admin/login"
+              className="inline-flex items-center justify-center border border-slate-700/80 bg-slate-900/60 text-slate-300 text-xs font-display font-semibold tracking-wide px-4 py-2.5 rounded-xl hover:border-orange-500/50 hover:text-white hover:bg-slate-800/80 transition-all duration-300"
+            >
+              ADMIN LOGIN
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-xl hover:from-orange-400 hover:to-orange-500 glow-orange hover:shadow-[0_0_36px_rgba(249,115,22,0.5)] hover:-translate-y-0.5 transition-all duration-300"
+            >
+              REGISTER NOW
+            </Link>
+          </div>
 
           {/* Mobile toggle */}
           <button
@@ -124,8 +132,14 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
+              to="/admin/login"
+              className="mt-4 text-center border border-slate-700/80 bg-slate-900/60 text-slate-200 font-display font-semibold px-5 py-3.5 rounded-xl hover:border-orange-500/50 hover:bg-slate-800/80 transition-colors"
+            >
+              ADMIN LOGIN
+            </Link>
+            <Link
               to="/register"
-              className="mt-4 text-center bg-gradient-to-r from-orange-500 to-orange-600 text-white font-display font-semibold px-5 py-3.5 rounded-xl glow-orange"
+              className="text-center bg-gradient-to-r from-orange-500 to-orange-600 text-white font-display font-semibold px-5 py-3.5 rounded-xl glow-orange"
             >
               REGISTER NOW
             </Link>

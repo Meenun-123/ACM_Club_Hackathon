@@ -21,9 +21,18 @@ export type ResourceRecord = {
   resource_url: string;
 };
 
-export function eventStatus(eventDate: string): 'Upcoming' | 'Ongoing' | 'Past' {
+function parseEventDate(eventDate: string | null | undefined) {
+  if (!eventDate) return null;
+  const value = String(eventDate).trim();
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function eventStatus(eventDate: string | null | undefined): 'Upcoming' | 'Ongoing' | 'Past' {
+  const date = parseEventDate(eventDate);
+  if (!date) return 'Past';
   const today = new Date();
-  const date = new Date(`${eventDate}T00:00:00`);
   today.setHours(0, 0, 0, 0);
   if (date.getTime() > today.getTime()) return 'Upcoming';
   if (date.getTime() === today.getTime()) return 'Ongoing';
@@ -49,5 +58,9 @@ export async function isCurrentAdmin() {
   return Boolean(data);
 }
 
-export const formatEventDate = (date: string) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${date}T00:00:00`));
+export const formatEventDate = (date: string | null | undefined) => {
+  const parsed = parseEventDate(date);
+  if (!parsed) return 'Date to be announced';
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(parsed);
+};
 export const whatsappUrl = (phone: string) => `https://wa.me/${phone.replace(/\D/g, '')}`;

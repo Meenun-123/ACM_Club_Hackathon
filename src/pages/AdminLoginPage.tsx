@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
     if (!adminRow) {
       console.log('[v0] Authenticated user is not allowlisted:', authData.user.id);
       await supabase.auth.signOut();
-      setError('This account is not on the admin allowlist.');
+      setError('Access denied: Account not allowlisted.');
       setBusy(false);
       return;
     }

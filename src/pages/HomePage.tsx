@@ -6,7 +6,6 @@ import GlassCard from '@/components/ui/GlassCard';
 import SectionHeading from '@/components/ui/SectionHeading';
 import Countdown from '@/components/Countdown';
 import HighlightsGrid from '@/components/HighlightsGrid';
-import EventsHub from '@/components/EventsHub';
 import { EVENT, JOURNEY_STAGES } from '@/lib/constants';
 import { useScrollReveal } from '@/lib/hooks';
 
@@ -264,7 +263,6 @@ export default function HomePage() {
       <Hero />
       <CountdownSection />
       <QuickInfo />
-      <EventsHub />
       <HighlightsSection />
       <JourneyPreview />
       <FinalCTA />

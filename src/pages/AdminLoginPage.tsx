@@ -9,7 +9,7 @@ export default function AdminLoginPage() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPassword = password.trim();
+    const normalizedPassword = password;
     setBusy(true);
     setError('');
 

@@ -192,5 +192,5 @@ export default function AnimatedBackground({
     };
   }, [density]);
 
-  return <canvas ref={canvasRef} className={`pointer-events-none fixed inset-0 -z-10 h-full w-full bg-[#07090e] ${className}`} aria-hidden="true" />;
+  return <canvas ref={canvasRef} className={`pointer-events-none fixed inset-0 z-0 h-full w-full bg-transparent ${className}`} aria-hidden="true" />;
 }

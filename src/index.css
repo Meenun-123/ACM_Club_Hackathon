@@ -20,6 +20,17 @@
     box-sizing: border-box;
   }
 
+  /* Keep the presentation layer non-selectable while preserving normal form editing. */
+  body, body * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input, textarea, select, [contenteditable='true'] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;

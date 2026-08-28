@@ -46,10 +46,14 @@ export default function AnimatedBackground({
 
     const palette = ['249, 115, 22', '251, 146, 60', '59, 130, 246'];
     const bubbles: Bubble[] = [];
-    const count = Math.min(34, Math.max(28, density));
+    const count = window.innerWidth < 640
+      ? Math.min(20, Math.max(16, Math.round(density * 0.55)))
+      : Math.min(34, Math.max(28, density));
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = window.innerWidth < 640
+        ? Math.min(window.devicePixelRatio || 1, 1.25)
+        : Math.min(window.devicePixelRatio || 1, 1.75);
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width * dpr;

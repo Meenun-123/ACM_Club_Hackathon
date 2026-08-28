@@ -42,10 +42,10 @@ export default function Navbar() {
           <Link to="/" className="flex min-w-0 items-center group" aria-label="Amrita Vishwa Vidyapeetham Nagercoil Campus home">
             <div className="leading-tight">
               <div className="max-w-[15rem] font-display text-sm font-bold tracking-wide text-white sm:max-w-none sm:text-base">
-                Amrita Vishwa Vidyapeetham Nagercoil Campus
+                Amrita Vishwa Vidyapeetham
               </div>
               <div className="text-[10px] uppercase tracking-[0.15em] text-slate-400">
-                School of Computing · ACM
+                Nagercoil Campus · School of Computing · ACM
               </div>
             </div>
           </Link>

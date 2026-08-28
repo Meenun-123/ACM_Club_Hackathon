@@ -46,7 +46,7 @@ export default function AnimatedBackground({
 
     const palette = ['249, 115, 22', '251, 146, 60', '59, 130, 246'];
     const bubbles: Bubble[] = [];
-    const count = Math.min(40, Math.max(30, density));
+    const count = Math.min(34, Math.max(28, density));
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -117,9 +117,8 @@ export default function AnimatedBackground({
       lastTime = now;
       mouseSpeed *= Math.pow(0.86, delta);
       scrollVelocity *= Math.pow(0.82, delta);
-      scrollBlur += (Math.min(Math.abs(scrollVelocity) * 0.018, 2.2) - scrollBlur) * 0.16 * delta;
+      scrollBlur += (Math.min(Math.abs(scrollVelocity) * 0.012, 0.7) - scrollBlur) * 0.18 * delta;
       ctx.clearRect(0, 0, width, height);
-      ctx.filter = scrollBlur > 0.05 ? `blur(${scrollBlur.toFixed(2)}px)` : 'none';
 
       for (const bubble of bubbles) {
         const dx = bubble.x - mouseX;
@@ -132,9 +131,9 @@ export default function AnimatedBackground({
           bubble.vy += (dy / distance) * force * delta;
         }
 
-        const cursorInfluence = mouseX > -9000 ? Math.min(mouseSpeed * 0.012, 0.45) : 0;
-        bubble.vx += (mouseDirectionX * 0.0015 + cursorInfluence) * delta;
-        bubble.vy += mouseDirectionY * 0.0015 * delta;
+        const cursorInfluence = mouseX > -9000 ? Math.min(mouseSpeed * 0.004, 0.12) : 0;
+        bubble.vx += (mouseDirectionX * 0.00035 + cursorInfluence) * delta;
+        bubble.vy += mouseDirectionY * 0.00035 * delta;
         bubble.vx *= Math.pow(0.92, delta);
         bubble.vy *= Math.pow(0.92, delta);
         bubble.swingAngle += bubble.swingSpeed * delta;
@@ -165,10 +164,7 @@ export default function AnimatedBackground({
         ctx.beginPath();
         ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = `rgba(${bubble.color}, ${bubble.opacity * 0.35})`;
         ctx.fill();
-        ctx.shadowBlur = 0;
 
         ctx.beginPath();
         ctx.arc(bubble.x, bubble.y, radius * 0.93, Math.PI * 1.05, Math.PI * 1.75);
@@ -180,6 +176,14 @@ export default function AnimatedBackground({
       animationFrame = requestAnimationFrame(render);
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) cancelAnimationFrame(animationFrame);
+      else {
+        lastTime = performance.now();
+        animationFrame = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     animationFrame = requestAnimationFrame(render);
     return () => {
       cancelAnimationFrame(animationFrame);
@@ -189,6 +193,7 @@ export default function AnimatedBackground({
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [density]);
 

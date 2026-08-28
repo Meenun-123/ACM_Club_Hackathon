@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import AnimatedBackground from './ui/AnimatedBackground';
 
 export default function Layout() {
   const location = useLocation();
@@ -15,6 +16,7 @@ export default function Layout() {
 
   return (
     <div className={`relative min-h-screen flex flex-col ${isAdminRoute ? 'bg-[#070b13]' : 'bg-navy-900'}`}>
+      <AnimatedBackground density={36} />
       {!isAdminRoute && <Navbar />}
       <main className="flex-1">
         <div key={location.pathname} className="animate-fade-in">

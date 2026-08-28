@@ -38,6 +38,11 @@ export default function AnimatedBackground({
     let previousMouseX = mouseX;
     let previousMouseY = mouseY;
     let mouseSpeed = 0;
+    let mouseDirectionX = 0;
+    let mouseDirectionY = 0;
+    let scrollBlur = 0;
+    let scrollVelocity = 0;
+    let previousScrollY = window.scrollY;
 
     const palette = ['249, 115, 22', '251, 146, 60', '59, 130, 246'];
     const bubbles: Bubble[] = [];
@@ -55,7 +60,7 @@ export default function AnimatedBackground({
     };
 
     for (let i = 0; i < count; i += 1) {
-      const radius = 18 + Math.random() * 47;
+      const radius = 8 + Math.random() * 20;
       bubbles.push({
         x: Math.random() * window.innerWidth,
         y: Math.random() * window.innerHeight,
@@ -75,6 +80,8 @@ export default function AnimatedBackground({
       const dx = event.clientX - previousMouseX;
       const dy = event.clientY - previousMouseY;
       mouseSpeed = Number.isFinite(dx) ? Math.hypot(dx, dy) : 0;
+      mouseDirectionX = Number.isFinite(dx) ? dx : 0;
+      mouseDirectionY = Number.isFinite(dy) ? dy : 0;
       previousMouseX = event.clientX;
       previousMouseY = event.clientY;
       mouseX = event.clientX;
@@ -92,6 +99,10 @@ export default function AnimatedBackground({
       if (touch) handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as MouseEvent);
     };
     const handleTouchEnd = () => handleMouseLeave();
+    const handleScroll = () => {
+      scrollVelocity = window.scrollY - previousScrollY;
+      previousScrollY = window.scrollY;
+    };
 
     resize();
     window.addEventListener('resize', resize);
@@ -99,12 +110,16 @@ export default function AnimatedBackground({
     window.addEventListener('mouseleave', handleMouseLeave);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     const render = (now: number) => {
       const delta = Math.min((now - lastTime) / 16.67, 3);
       lastTime = now;
       mouseSpeed *= Math.pow(0.86, delta);
+      scrollVelocity *= Math.pow(0.82, delta);
+      scrollBlur += (Math.min(Math.abs(scrollVelocity) * 0.018, 2.2) - scrollBlur) * 0.16 * delta;
       ctx.clearRect(0, 0, width, height);
+      ctx.filter = scrollBlur > 0.05 ? `blur(${scrollBlur.toFixed(2)}px)` : 'none';
 
       for (const bubble of bubbles) {
         const dx = bubble.x - mouseX;
@@ -117,6 +132,9 @@ export default function AnimatedBackground({
           bubble.vy += (dy / distance) * force * delta;
         }
 
+        const cursorInfluence = mouseX > -9000 ? Math.min(mouseSpeed * 0.012, 0.45) : 0;
+        bubble.vx += (mouseDirectionX * 0.0015 + cursorInfluence) * delta;
+        bubble.vy += mouseDirectionY * 0.0015 * delta;
         bubble.vx *= Math.pow(0.92, delta);
         bubble.vy *= Math.pow(0.92, delta);
         bubble.swingAngle += bubble.swingSpeed * delta;
@@ -170,6 +188,7 @@ export default function AnimatedBackground({
       window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [density]);
 

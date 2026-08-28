@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, Clock, MapPin, Users, ChevronDown } from 'lucide-react';
-import AnimatedBackground from '@/components/ui/AnimatedBackground';
 import Button from '@/components/ui/Button';
 import GlassCard from '@/components/ui/GlassCard';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -23,7 +22,6 @@ function Hero() {
         className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-navy-900 via-navy-900/60 to-transparent"
         aria-hidden="true"
       />
-      <AnimatedBackground density={40} />
 
       {/* Glowing pathway */}
       <div

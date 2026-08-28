@@ -1,5 +1,19 @@
 import { useEffect, useRef } from 'react';
 
+interface Bubble {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  baseSpeedY: number;
+  radius: number;
+  baseRadius: number;
+  swingAngle: number;
+  swingSpeed: number;
+  color: string;
+  opacity: number;
+}
+
 export default function AnimatedBackground({
   density = 36,
   className = '',
@@ -15,109 +29,147 @@ export default function AnimatedBackground({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let animationFrame = 0;
     let width = 0;
     let height = 0;
-    let frame = 0;
     let lastTime = performance.now();
-    const cursor = { x: 0, y: 0, targetX: 0, targetY: 0, active: false };
+    let mouseX = -9999;
+    let mouseY = -9999;
+    let previousMouseX = mouseX;
+    let previousMouseY = mouseY;
+    let mouseSpeed = 0;
+
+    const palette = ['249, 115, 22', '251, 146, 60', '59, 130, 246'];
+    const bubbles: Bubble[] = [];
     const count = Math.min(40, Math.max(30, density));
-    const particles = Array.from({ length: count }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      vx: (Math.random() - 0.5) * 0.012,
-      vy: (Math.random() - 0.5) * 0.012,
-      radius: 1 + Math.random() * 2.5,
-      opacity: 0.2 + Math.random() * 0.5,
-      phase: Math.random() * Math.PI * 2,
-      warmth: Math.random() > 0.72,
-    }));
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
+      width = window.innerWidth;
+      height = window.innerHeight;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
-    const setCursor = (x: number, y: number) => {
-      const rect = canvas.getBoundingClientRect();
-      cursor.targetX = x - rect.left;
-      cursor.targetY = y - rect.top;
-      cursor.active = true;
+
+    for (let i = 0; i < count; i += 1) {
+      const radius = 18 + Math.random() * 47;
+      bubbles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: 0,
+        vy: 0,
+        baseSpeedY: 0.3 + Math.random() * 0.45,
+        radius,
+        baseRadius: radius,
+        swingAngle: Math.random() * Math.PI * 2,
+        swingSpeed: 0.01 + Math.random() * 0.015,
+        color: palette[Math.floor(Math.random() * palette.length)],
+        opacity: 0.15 + Math.random() * 0.35,
+      });
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const dx = event.clientX - previousMouseX;
+      const dy = event.clientY - previousMouseY;
+      mouseSpeed = Number.isFinite(dx) ? Math.hypot(dx, dy) : 0;
+      previousMouseX = event.clientX;
+      previousMouseY = event.clientY;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
     };
-    const onMouseMove = (event: MouseEvent) => setCursor(event.clientX, event.clientY);
-    const onTouchMove = (event: TouchEvent) => {
+    const handleMouseLeave = () => {
+      mouseX = -9999;
+      mouseY = -9999;
+      previousMouseX = mouseX;
+      previousMouseY = mouseY;
+      mouseSpeed = 0;
+    };
+    const handleTouchMove = (event: TouchEvent) => {
       const touch = event.touches[0];
-      if (touch) setCursor(touch.clientX, touch.clientY);
+      if (touch) handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as MouseEvent);
     };
-    const clearCursor = () => { cursor.active = false; };
+    const handleTouchEnd = () => handleMouseLeave();
+
     resize();
     window.addEventListener('resize', resize);
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('mouseleave', clearCursor);
-    window.addEventListener('mouseout', clearCursor);
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', clearCursor, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-    const draw = (now: number) => {
+    const render = (now: number) => {
       const delta = Math.min((now - lastTime) / 16.67, 3);
       lastTime = now;
-      cursor.x += (cursor.targetX - cursor.x) * 0.09;
-      cursor.y += (cursor.targetY - cursor.y) * 0.09;
+      mouseSpeed *= Math.pow(0.86, delta);
       ctx.clearRect(0, 0, width, height);
 
-      if (cursor.active) {
-        const glow = ctx.createRadialGradient(cursor.x, cursor.y, 0, cursor.x, cursor.y, 360);
-        glow.addColorStop(0, 'rgba(249, 115, 22, 0.12)');
-        glow.addColorStop(0.45, 'rgba(249, 115, 22, 0.035)');
-        glow.addColorStop(1, 'rgba(249, 115, 22, 0)');
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, width, height);
-      }
-
-      for (const particle of particles) {
-        const px = particle.x * width;
-        const py = particle.y * height;
-        const dx = px - cursor.x;
-        const dy = py - cursor.y;
+      for (const bubble of bubbles) {
+        const dx = bubble.x - mouseX;
+        const dy = bubble.y - mouseY;
         const distance = Math.hypot(dx, dy);
-        if (cursor.active && distance > 0 && distance < 150) {
-          const force = (1 - distance / 150) * 0.0009 * delta;
-          particle.vx += (dx / distance) * force;
-          particle.vy += (dy / distance) * force;
+        const repelRadius = 160;
+        if (distance > 0 && distance < repelRadius) {
+          const force = (1 - distance / repelRadius) * (0.25 + Math.min(mouseSpeed * 0.035, 1.8));
+          bubble.vx += (dx / distance) * force * delta;
+          bubble.vy += (dy / distance) * force * delta;
         }
-        particle.vx *= Math.pow(0.985, delta);
-        particle.vy *= Math.pow(0.985, delta);
-        particle.x += particle.vx * delta;
-        particle.y += particle.vy * delta;
-        if (particle.x < -0.02) particle.x = 1.02;
-        if (particle.x > 1.02) particle.x = -0.02;
-        if (particle.y < -0.02) particle.y = 1.02;
-        if (particle.y > 1.02) particle.y = -0.02;
-        const pulse = 0.85 + Math.sin(now * 0.001 + particle.phase) * 0.15;
+
+        bubble.vx *= Math.pow(0.92, delta);
+        bubble.vy *= Math.pow(0.92, delta);
+        bubble.swingAngle += bubble.swingSpeed * delta;
+        bubble.x += bubble.vx * delta + Math.sin(bubble.swingAngle) * 0.45 * delta;
+        bubble.y += bubble.vy * delta - bubble.baseSpeedY * delta;
+
+        if (bubble.y + bubble.radius < 0) {
+          bubble.y = height + bubble.radius;
+          bubble.x = Math.random() * width;
+        }
+        if (bubble.x < -bubble.radius) bubble.x = width + bubble.radius;
+        if (bubble.x > width + bubble.radius) bubble.x = -bubble.radius;
+
+        const pulse = 1 + Math.sin(now * 0.001 + bubble.swingAngle) * 0.06;
+        const radius = bubble.baseRadius * pulse;
+        const gradient = ctx.createRadialGradient(
+          bubble.x - radius * 0.3,
+          bubble.y - radius * 0.35,
+          radius * 0.08,
+          bubble.x,
+          bubble.y,
+          radius,
+        );
+        gradient.addColorStop(0, `rgba(${bubble.color}, ${bubble.opacity * 0.85})`);
+        gradient.addColorStop(0.58, `rgba(${bubble.color}, ${bubble.opacity * 0.28})`);
+        gradient.addColorStop(1, `rgba(${bubble.color}, 0)`);
+
         ctx.beginPath();
-        ctx.arc(particle.x * width, particle.y * height, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = particle.warmth
-          ? `rgba(251, 146, 60, ${particle.opacity * pulse})`
-          : `rgba(148, 163, 184, ${particle.opacity * pulse})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = particle.warmth ? 'rgba(249,115,22,0.35)' : 'rgba(148,163,184,0.2)';
+        ctx.arc(bubble.x, bubble.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = `rgba(${bubble.color}, ${bubble.opacity * 0.35})`;
         ctx.fill();
         ctx.shadowBlur = 0;
-      }
-      frame = requestAnimationFrame(draw);
-    };
-    frame = requestAnimationFrame(draw);
 
+        ctx.beginPath();
+        ctx.arc(bubble.x, bubble.y, radius * 0.93, Math.PI * 1.05, Math.PI * 1.75);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${bubble.opacity * 0.22})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      animationFrame = requestAnimationFrame(render);
+    };
+
+    animationFrame = requestAnimationFrame(render);
     return () => {
-      cancelAnimationFrame(frame);
+      cancelAnimationFrame(animationFrame);
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseleave', clearCursor);
-      window.removeEventListener('mouseout', clearCursor);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', clearCursor);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [density]);
 

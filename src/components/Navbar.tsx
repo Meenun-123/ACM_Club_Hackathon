@@ -31,10 +31,10 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 inset-x-0 z-50 will-change-[background-color,box-shadow,padding] transition-[background-color,box-shadow,padding,backdrop-filter] duration-500 ease-out ${
           scrolled
-            ? 'glass-strong border-b border-electric-500/15 py-3'
-            : 'bg-transparent py-5'
+            ? 'glass-strong border-b border-electric-500/15 py-3 shadow-[0_10px_35px_rgba(2,6,23,0.22)]'
+            : 'bg-transparent py-5 shadow-none'
         }`}
       >
         <nav className="max-w-8xl mx-auto px-6 flex items-center justify-between">

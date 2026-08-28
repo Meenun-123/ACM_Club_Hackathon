@@ -31,25 +31,21 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 inset-x-0 z-50 will-change-[background-color,box-shadow,padding] transition-[background-color,box-shadow,padding,backdrop-filter] duration-500 ease-out ${
           scrolled
-            ? 'glass-strong border-b border-electric-500/15 py-3'
-            : 'bg-transparent py-5'
+            ? 'glass-strong border-b border-electric-500/15 py-3 shadow-[0_10px_35px_rgba(2,6,23,0.22)]'
+            : 'bg-transparent py-5 shadow-none'
         }`}
       >
-        <nav className="max-w-8xl mx-auto px-6 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group" aria-label="Home">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center font-display font-bold text-white text-lg glow-orange">
-                A
-              </div>
-              <div className="absolute inset-0 rounded-lg bg-orange-500/30 blur-md -z-10 group-hover:bg-orange-500/50 transition" />
-            </div>
+        <nav className="mx-auto flex w-full max-w-8xl items-center justify-between px-4 sm:px-6">
+          {/* Campus branding */}
+          <Link to="/" className="flex min-w-0 items-center group" aria-label="Amrita Vishwa Vidyapeetham Nagercoil Campus home">
             <div className="leading-tight">
-              <div className="font-display font-bold text-white text-sm tracking-wide">AMRITA</div>
-              <div className="text-[10px] text-slate-400 uppercase tracking-[0.15em]">
-                School of Computing · ACM
+              <div className="max-w-[15rem] font-display text-sm font-bold tracking-wide text-white sm:max-w-none sm:text-base">
+                Amrita Vishwa Vidyapeetham
+              </div>
+              <div className="max-w-[15rem] truncate text-[9px] uppercase tracking-[0.1em] text-slate-400 sm:max-w-none sm:text-[10px] sm:tracking-[0.15em]">
+                Nagercoil Campus · School of Computing · ACM
               </div>
             </div>
           </Link>

@@ -38,17 +38,13 @@ export default function Navbar() {
         }`}
       >
         <nav className="max-w-8xl mx-auto px-6 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group" aria-label="Home">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center font-display font-bold text-white text-lg glow-orange">
-                A
-              </div>
-              <div className="absolute inset-0 rounded-lg bg-orange-500/30 blur-md -z-10 group-hover:bg-orange-500/50 transition" />
-            </div>
+          {/* Campus branding */}
+          <Link to="/" className="flex min-w-0 items-center group" aria-label="Amrita Vishwa Vidyapeetham Nagercoil Campus home">
             <div className="leading-tight">
-              <div className="font-display font-bold text-white text-sm tracking-wide">AMRITA</div>
-              <div className="text-[10px] text-slate-400 uppercase tracking-[0.15em]">
+              <div className="max-w-[15rem] font-display text-sm font-bold tracking-wide text-white sm:max-w-none sm:text-base">
+                Amrita Vishwa Vidyapeetham Nagercoil Campus
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-slate-400">
                 School of Computing · ACM
               </div>
             </div>

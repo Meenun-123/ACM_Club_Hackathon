@@ -135,6 +135,16 @@
   }
 }
 
+@media (max-width: 767px) {
+  .mobile-admin-drawer .drawer-branding {
+    display: none;
+  }
+
+  .mobile-admin-drawer .drawer-overview {
+    margin-top: 1rem;
+  }
+}
+
 @media (max-width: 639px) {
   .section-pad {
     padding-top: 4rem;

@@ -138,7 +138,9 @@ export default function AnimatedBackground({
         bubble.vy *= Math.pow(0.92, delta);
         bubble.swingAngle += bubble.swingSpeed * delta;
         bubble.x += bubble.vx * delta + Math.sin(bubble.swingAngle) * 0.45 * delta;
-        bubble.y += bubble.vy * delta - bubble.baseSpeedY * delta;
+        // Mirror page movement: scrolling down pushes bubbles upward, scrolling up pulls them downward.
+        const scrollDrift = Math.max(-3.2, Math.min(3.2, -scrollVelocity * 0.08));
+        bubble.y += (bubble.vy - bubble.baseSpeedY + scrollDrift) * delta;
 
         if (bubble.y + bubble.radius < 0) {
           bubble.y = height + bubble.radius;

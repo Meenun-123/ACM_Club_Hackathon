@@ -9,7 +9,7 @@ export default defineConfig({
   // Use a valid secure websocket endpoint in the hosted v0 iframe. Without
   // an explicit protocol/port, Vite's fallback can construct an invalid URL.
   server: {
-    host: '0.0.0.0',
+    host: true,
     hmr: {
       protocol: 'wss',
       clientPort: 443,

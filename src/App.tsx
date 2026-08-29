@@ -10,6 +10,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import SuccessPage from '@/pages/SuccessPage';
 import AdminLoginPage from '@/pages/AdminLoginPage';
 import AdminDashboardPage from '@/pages/AdminDashboardPage';
+import AdminRegistrationsPage from '@/pages/AdminRegistrationsPage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/register/success" element={<SuccessPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/registrations" element={<AdminRegistrationsPage />} />
           <Route path="*" element={<HomePage />} />
         </Route>
       </Routes>

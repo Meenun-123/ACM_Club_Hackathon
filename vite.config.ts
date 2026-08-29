@@ -6,11 +6,14 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig({
   plugins: [react()],
   envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
-  // The hosted v0 preview supplies its own transport; disable Vite's
-  // fallback WebSocket, which otherwise receives an invalid preview URL.
+  // Use a valid secure websocket endpoint in the hosted v0 iframe. Without
+  // an explicit protocol/port, Vite's fallback can construct an invalid URL.
   server: {
     host: '0.0.0.0',
-    hmr: false,
+    hmr: {
+      protocol: 'wss',
+      clientPort: 443,
+    },
     watch: {
       usePolling: true,
     },

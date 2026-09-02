@@ -10,7 +10,7 @@ export default function PageHero({ label, title, subtitle }: PageHeroProps) {
   const { ref, inView } = useScrollReveal();
 
   return (
-    <section className="relative pt-36 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
+    <section className="relative mt-20 pt-16 pb-20 sm:mt-24 sm:pt-16 sm:pb-24 overflow-hidden">
       {/* Background grid + glow */}
       <div className="absolute inset-0 grid-bg animate-grid-pan opacity-40" aria-hidden="true" />
       <div

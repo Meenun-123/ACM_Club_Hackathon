@@ -4,48 +4,4 @@ import GlassCard from '@/components/ui/GlassCard';
 import RegistrationForm from '@/components/RegistrationForm';
 import { EVENT } from '@/lib/constants';
 
-export default function RegisterPage() {
-  return (
-    <>
-      <PageHero
-        label="Registration"
-        title={<>BEGIN YOUR <span className="text-gradient-orange">ASCENSION</span></>}
-        subtitle="Register for Hack Ascension 2026"
-      />
-
-      {/* Quick event info */}
-      <section className="relative -mt-4 pb-4">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { icon: Calendar, label: 'Date', value: EVENT.date },
-              { icon: MapPin, label: 'Venue', value: EVENT.venue },
-              { icon: Clock, label: 'Time', value: EVENT.time },
-              { icon: CalendarClock, label: 'Deadline', value: EVENT.registrationDeadline },
-            ].map((item) => (
-              <GlassCard key={item.label} className="p-4 sm:p-5 text-center">
-                <item.icon className="w-5 h-5 text-orange-400 mx-auto mb-2" />
-                <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1">
-                  {item.label}
-                </div>
-                <div className="text-sm font-semibold text-white leading-tight">{item.value}</div>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Form */}
-      <section className="relative section-pad pt-10 overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-20" aria-hidden="true" />
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-orange-500/10 blur-[140px] rounded-full"
-          aria-hidden="true"
-        />
-        <div className="relative max-w-2xl mx-auto px-6">
-          <RegistrationForm />
-        </div>
-      </section>
-    </>
-  );
-}
+export default function RegisterPage() { return <><PageHero label="Team registration" title={<>REGISTER <span className="text-gradient-orange">YOUR TEAM</span></>} subtitle="Hack Ascension 2026" /><section className="relative -mt-4 pb-4"><div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 px-6 lg:grid-cols-4 sm:gap-4">{[{ icon: Calendar, label: 'Date', value: EVENT.date }, { icon: MapPin, label: 'Venue', value: EVENT.venue }, { icon: Clock, label: 'Time', value: EVENT.time }, { icon: CalendarClock, label: 'Deadline', value: EVENT.registrationDeadline }].map((item) => <GlassCard key={item.label} className="p-4 text-center sm:p-5"><item.icon className="mx-auto mb-2 size-5 text-orange-400" /><div className="mb-1 text-[10px] uppercase tracking-[0.15em] text-slate-500">{item.label}</div><div className="text-sm font-semibold leading-tight text-white">{item.value}</div></GlassCard>)}</div></section><section className="relative section-pad overflow-hidden pt-10"><div className="absolute inset-0 grid-bg opacity-20" aria-hidden="true" /><div className="relative mx-auto max-w-2xl px-6"><h1 className="mb-7 text-center font-display text-3xl font-bold text-white sm:text-4xl">Register Your Team</h1><RegistrationForm /></div></section></>; }

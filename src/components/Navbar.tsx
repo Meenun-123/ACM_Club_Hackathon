@@ -78,6 +78,7 @@ export default function Navbar() {
             >
               ADMIN LOGIN
             </Link>
+            <Link to="/submit" className="inline-flex items-center justify-center rounded-xl border border-orange-400/40 px-4 py-2.5 text-xs font-display font-semibold tracking-wide text-orange-200 transition hover:border-orange-300 hover:bg-orange-400/10">PROJECT SUBMISSION</Link>
             <Link
               to="/register"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-display font-semibold px-5 py-2.5 rounded-xl hover:from-orange-400 hover:to-orange-500 glow-orange hover:shadow-[0_0_36px_rgba(249,115,22,0.5)] hover:-translate-y-0.5 transition-all duration-300"
@@ -133,6 +134,7 @@ export default function Navbar() {
             >
               ADMIN LOGIN
             </Link>
+            <Link to="/submit" className="text-center rounded-xl border border-orange-400/40 px-5 py-3.5 font-display font-semibold text-orange-200 transition hover:border-orange-300 hover:bg-orange-400/10">PROJECT SUBMISSION</Link>
             <Link
               to="/register"
               className="text-center bg-gradient-to-r from-orange-500 to-orange-600 text-white font-display font-semibold px-5 py-3.5 rounded-xl glow-orange"

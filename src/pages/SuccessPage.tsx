@@ -61,6 +61,9 @@ export default function SuccessPage() {
           <Button to="/event" size="lg">
             VIEW EVENT DETAILS <ArrowRight className="w-5 h-5" />
           </Button>
+          <Button to="/submit" variant="secondary" size="lg">
+            GO TO PROJECT SUBMISSION
+          </Button>
         </div>
 
         <p className="mt-8 text-xs text-slate-500">

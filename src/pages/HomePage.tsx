@@ -96,6 +96,9 @@ function Hero() {
           <Button to="/register" size="lg">
             REGISTER NOW <ArrowRight className="w-5 h-5" />
           </Button>
+          <Button to="/submit" variant="secondary" size="lg">
+            PROJECT SUBMISSION <ArrowRight className="w-5 h-5" />
+          </Button>
           <Button to="/event" variant="secondary" size="lg">
             EXPLORE THE EVENT
           </Button>

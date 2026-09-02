@@ -18,8 +18,25 @@ export default function EventsHub() {
     [events, filter],
   );
 
+  const [toastMessage, setToastMessage] = useState('');
+
+  const handleWhatsAppClick = () => {
+    setToastMessage('Stay tuned! We will soon add this feature.');
+    setTimeout(() => setToastMessage(''), 3500);
+  };
+
   return (
     <section className="relative mx-auto max-w-7xl px-6 py-20" id="events">
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-slate-900/95 border border-orange-500/40 text-white text-sm font-medium shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-orange-400 shrink-0 animate-bounce" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
         <div>
           <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-orange-300">The event hub</p>
@@ -42,7 +59,7 @@ export default function EventsHub() {
             const status = eventStatus(event.event_date);
             return <article key={event.id} className="group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/75 transition-all duration-300 hover:-translate-y-1 hover:border-orange-300/50">
               {event.banner_url ? <img src={event.banner_url} alt={`${event.title} banner`} className="h-36 w-full object-cover" /> : <div className="h-2 bg-orange-300" />}
-              <div className="p-5"><div className="mb-4 flex items-center justify-between gap-3"><span className="rounded-full border border-orange-300/40 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-orange-200">{status}</span><span className="text-xs text-slate-500">{formatEventDate(event.event_date)}</span></div><h3 className="font-display text-2xl font-semibold text-white">{event.title}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">{event.description}</p><div className="mt-5 flex flex-col gap-2 text-sm text-slate-400"><span className="flex items-center gap-2"><MapPin className="size-4 text-orange-300" />{event.venue}</span>{event.start_time && <span className="flex items-center gap-2"><CalendarDays className="size-4 text-orange-300" />{event.start_time.slice(0, 5)}</span>}</div><div className="mt-6 flex flex-wrap gap-2">{event.registration_url && status !== 'Past' && <a href={event.registration_url} target="_blank" rel="noreferrer" className="rounded-full bg-orange-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-orange-200"><ExternalLink className="mr-2 inline size-4" />Register now</a>}<a href={whatsappUrl(event.coordinator_phone)} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"><MessageCircle className="mr-2 inline size-4" />WhatsApp coordinator</a></div></div>
+              <div className="p-5"><div className="mb-4 flex items-center justify-between gap-3"><span className="rounded-full border border-orange-300/40 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-orange-200">{status}</span><span className="text-xs text-slate-500">{formatEventDate(event.event_date)}</span></div><h3 className="font-display text-2xl font-semibold text-white">{event.title}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">{event.description}</p><div className="mt-5 flex flex-col gap-2 text-sm text-slate-400"><span className="flex items-center gap-2"><MapPin className="size-4 text-orange-300" />{event.venue}</span>{event.start_time && <span className="flex items-center gap-2"><CalendarDays className="size-4 text-orange-300" />{event.start_time.slice(0, 5)}</span>}</div><div className="mt-6 flex flex-wrap gap-2">{event.registration_url && status !== 'Past' && <a href={event.registration_url} target="_blank" rel="noreferrer" className="rounded-full bg-orange-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-orange-200"><ExternalLink className="mr-2 inline size-4" />Register now</a>}<button onClick={handleWhatsAppClick} className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"><MessageCircle className="mr-2 inline size-4" />WhatsApp coordinator</button></div></div>
             </article>;
           })}
         </div>

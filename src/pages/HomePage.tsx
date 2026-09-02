@@ -52,51 +52,53 @@ function Hero() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="h-px w-10 bg-gradient-to-r from-transparent to-orange-500" />
-          <span className="text-orange-400 font-display text-xs sm:text-sm font-semibold uppercase tracking-[0.3em]">
-            ACM Student Chapter Presents
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 backdrop-blur-md mb-8">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
           </span>
-          <span className="h-px w-10 bg-gradient-to-l from-transparent to-orange-500" />
+          <span className="text-orange-300 font-mono text-xs uppercase tracking-[0.2em] font-semibold">
+            ACM Student Chapter · Flagship Hackathon
+          </span>
         </div>
 
         <h1 className="font-display font-bold leading-[0.95] tracking-tight">
-          <span className="block text-5xl sm:text-7xl md:text-8xl text-white">HACK</span>
-          <span className="block text-5xl sm:text-7xl md:text-8xl text-gradient-orange mt-1">
+          <span className="block text-4xl sm:text-7xl md:text-8xl text-white">HACK</span>
+          <span className="block text-4xl sm:text-7xl md:text-8xl text-gradient-orange mt-1">
             ASCENSION
           </span>
-          <span className="block text-6xl sm:text-8xl md:text-9xl text-gradient-blue mt-2">
+          <span className="block text-5xl sm:text-8xl md:text-9xl text-gradient-blue mt-2">
             2026
           </span>
         </h1>
 
-        <p className="mt-6 font-display text-lg sm:text-2xl text-slate-200 tracking-wide">
+        <p className="mt-5 sm:mt-6 font-display text-base sm:text-2xl text-slate-200 tracking-wide">
           {EVENT.tagline}
         </p>
 
-        <p className="mt-5 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-4 sm:mt-5 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed px-2">
           A technology-driven event designed to inspire, challenge and empower the next
           generation of developers and innovators.
         </p>
 
         {/* Event meta */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-slate-300">
+        <div className="mt-7 sm:mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-xs sm:text-sm text-slate-300">
           <span className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-orange-400" /> {EVENT.date}
+            <Calendar className="w-4 h-4 text-orange-400 shrink-0" /> {EVENT.date}
           </span>
           <span className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-orange-400" /> {EVENT.time}
+            <Clock className="w-4 h-4 text-orange-400 shrink-0" /> {EVENT.time}
           </span>
           <span className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-orange-400" /> {EVENT.venue}
+            <MapPin className="w-4 h-4 text-orange-400 shrink-0" /> {EVENT.venue}
           </span>
         </div>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button to="/register" size="lg">
+        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full max-w-sm sm:max-w-none mx-auto">
+          <Button to="/register" size="lg" className="w-full sm:w-auto justify-center">
             REGISTER NOW <ArrowRight className="w-5 h-5" />
           </Button>
-          <Button to="/event" variant="secondary" size="lg">
+          <Button to="/event" variant="secondary" size="lg" className="w-full sm:w-auto justify-center">
             EXPLORE THE EVENT
           </Button>
         </div>
@@ -256,6 +258,8 @@ function FinalCTA() {
   );
 }
 
+import FaqSection from '@/components/ui/FaqSection';
+
 export default function HomePage() {
   return (
     <>
@@ -265,6 +269,7 @@ export default function HomePage() {
       <EventsHub />
       <HighlightsSection />
       <JourneyPreview />
+      <FaqSection className="pt-8 pb-8" />
       <FinalCTA />
     </>
   );

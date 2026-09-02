@@ -10,7 +10,7 @@ const supabaseAnonKey = (
 
 if (!supabaseUrl || !supabaseAnonKey) {
   const message = 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY).';
-  if (import.meta.env.DEV) console.error('[v0] ' + message);
+  if (import.meta.env.DEV) console.error(message);
   throw new Error(message);
 }
 

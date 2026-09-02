@@ -4,66 +4,63 @@ import {
   ArrowLeft,
   ClipboardList,
   Download,
+  ExternalLink,
+  FolderGit2,
   LayoutDashboard,
   LogOut,
+  Presentation,
   Search,
+  ToggleLeft,
+  ToggleRight,
   UploadCloud,
-  Users,
-  X,
   Pencil,
   Trash2,
-  Copy,
+  X,
   Check,
   AlertTriangle,
-  Eye,
+  Info,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/lib/supabase';
 import AcmLogo from '@/components/ui/AcmLogo';
+import {
+  getSubmissions,
+  getSubmissionsOpen,
+  setSubmissionsOpen,
+  updateSubmission,
+  deleteSubmission,
+  type SubmissionRecord,
+} from '@/lib/portal';
 
-type Registration = {
-  id: string;
-  team_name: string;
-  leader_name: string;
-  leader_email: string;
-  leader_phone: string;
-  leader_roll_no: string;
-  leader_class_department: string;
-  team_members: Array<{ fullName: string; rollNo: string; department: string }>;
-  created_at: string;
-};
-
-export default function AdminRegistrationsPage() {
+export default function AdminSubmissionsPage() {
   const navigate = useNavigate();
-  const [rows, setRows] = useState<Registration[]>([]);
+  const [rows, setRows] = useState<SubmissionRecord[]>([]);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<Registration | null>(null);
   const [ready, setReady] = useState(false);
+  const [submissionsOpen, setSubmissionsOpenState] = useState(true);
+  const [toggling, setToggling] = useState(false);
   const [message, setMessage] = useState('');
-  const [copiedRoster, setCopiedRoster] = useState(false);
 
-  // Edit state
-  const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Registration>>({});
+  // Edit modal state
+  const [editingSubmission, setEditingSubmission] = useState<SubmissionRecord | null>(null);
+  const [editForm, setEditForm] = useState<Partial<SubmissionRecord>>({});
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // Delete state
-  const [deletingRegistration, setDeletingRegistration] = useState<Registration | null>(null);
+  // Delete modal state
+  const [deletingSubmission, setDeletingSubmission] = useState<SubmissionRecord | null>(null);
   const [deletingBusy, setDeletingBusy] = useState(false);
 
-  const fetchRegistrations = async () => {
-    const { data: registrations, error } = await supabase
-      .from('hackathon_registrations')
-      .select(
-        'id,team_name,leader_name,leader_email,leader_phone,leader_roll_no,leader_class_department,team_members,created_at'
-      )
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Failed to fetch registrations:', error);
-      setMessage('Failed to load registrations from Supabase.');
-    } else {
-      setRows((registrations ?? []) as Registration[]);
+  const refreshData = async () => {
+    try {
+      const [submissions, isOpen] = await Promise.all([
+        getSubmissions(),
+        getSubmissionsOpen(),
+      ]);
+      setRows(submissions);
+      setSubmissionsOpenState(isOpen);
+    } catch (err: any) {
+      console.error('Failed to load submissions:', err);
+      setMessage('Could not load submissions data.');
     }
   };
 
@@ -77,125 +74,125 @@ export default function AdminRegistrationsPage() {
         .maybeSingle();
       if (!admin) return navigate('/admin/login', { replace: true });
 
-      await fetchRegistrations();
+      await refreshData();
       setReady(true);
     });
   }, [navigate]);
 
-  const filtered = useMemo(
-    () =>
-      rows.filter((r) => {
-        const q = query.toLowerCase();
-        return (
-          r.team_name.toLowerCase().includes(q) ||
-          r.leader_name.toLowerCase().includes(q) ||
-          r.leader_roll_no.toLowerCase().includes(q) ||
-          r.leader_class_department.toLowerCase().includes(q)
-        );
-      }),
-    [rows, query]
-  );
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase();
+    return rows.filter(
+      (r) =>
+        r.team_name.toLowerCase().includes(q) ||
+        r.leader_name.toLowerCase().includes(q) ||
+        r.leader_roll_no.toLowerCase().includes(q) ||
+        r.class_name.toLowerCase().includes(q) ||
+        r.section.toLowerCase().includes(q)
+    );
+  }, [rows, query]);
 
-  const handleStartEdit = (reg: Registration) => {
-    setEditingRegistration(reg);
+  const handleToggleSubmissions = async () => {
+    setToggling(true);
+    try {
+      const nextState = !submissionsOpen;
+      await setSubmissionsOpen(nextState);
+      setSubmissionsOpenState(nextState);
+      setMessage(
+        nextState
+          ? 'Submissions portal is now OPEN.'
+          : 'Submissions portal is now LOCKED / CLOSED.'
+      );
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err: any) {
+      console.error('Failed to toggle submissions:', err);
+      setMessage('Failed to update submission status.');
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const handleStartEdit = (submission: SubmissionRecord) => {
+    setEditingSubmission(submission);
     setEditForm({
-      team_name: reg.team_name,
-      leader_name: reg.leader_name,
-      leader_email: reg.leader_email,
-      leader_phone: reg.leader_phone,
-      leader_roll_no: reg.leader_roll_no,
-      leader_class_department: reg.leader_class_department,
+      team_name: submission.team_name,
+      leader_name: submission.leader_name,
+      leader_roll_no: submission.leader_roll_no,
+      class_name: submission.class_name,
+      section: submission.section,
+      github_url: submission.github_url,
+      drive_url: submission.drive_url,
     });
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingRegistration) return;
+    if (!editingSubmission) return;
     setSavingEdit(true);
 
     try {
-      const { error } = await supabase
-        .from('hackathon_registrations')
-        .update(editForm)
-        .eq('id', editingRegistration.id);
-
-      if (error) throw error;
-
+      await updateSubmission(editingSubmission.id, editForm);
       setRows((prev) =>
         prev.map((item) =>
-          item.id === editingRegistration.id ? ({ ...item, ...editForm } as Registration) : item
+          item.id === editingSubmission.id ? ({ ...item, ...editForm } as SubmissionRecord) : item
         )
       );
-      setMessage(`Updated registration for team "${editForm.team_name}".`);
-      setEditingRegistration(null);
+      setMessage(`Successfully updated deliverables for team "${editForm.team_name}".`);
+      setEditingSubmission(null);
       setTimeout(() => setMessage(''), 4000);
     } catch (err: any) {
-      console.error('Failed to update registration:', err);
-      setMessage(`Failed to update: ${err?.message || 'Check database permissions'}`);
+      console.error('Failed to update submission:', err);
+      setMessage(`Failed to save changes: ${err?.message || 'Check database permissions'}`);
     } finally {
       setSavingEdit(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!deletingRegistration) return;
+    if (!deletingSubmission) return;
     setDeletingBusy(true);
 
     try {
-      const { error } = await supabase
-        .from('hackathon_registrations')
-        .delete()
-        .eq('id', deletingRegistration.id);
-
-      if (error) throw error;
-
-      setRows((prev) => prev.filter((item) => item.id !== deletingRegistration.id));
-      setMessage(`Deleted registration for team "${deletingRegistration.team_name}".`);
-      setDeletingRegistration(null);
+      await deleteSubmission(deletingSubmission.id);
+      setRows((prev) => prev.filter((item) => item.id !== deletingSubmission.id));
+      setMessage(`Deleted deliverables for team "${deletingSubmission.team_name}".`);
+      setDeletingSubmission(null);
       setTimeout(() => setMessage(''), 4000);
     } catch (err: any) {
-      console.error('Failed to delete registration:', err);
-      setMessage(`Failed to delete: ${err?.message || 'Check database permissions'}`);
+      console.error('Failed to delete submission:', err);
+      setMessage(`Failed to delete submission: ${err?.message || 'Check database permissions'}`);
     } finally {
       setDeletingBusy(false);
     }
   };
 
-  const handleCopyRoster = (reg: Registration) => {
-    const lines = [
-      `Team: ${reg.team_name}`,
-      `Leader: ${reg.leader_name} (${reg.leader_roll_no}) - ${reg.leader_class_department}`,
-      `Phone: ${reg.leader_phone} | Email: ${reg.leader_email}`,
-      'Members:',
-      ...(reg.team_members || []).map(
-        (m, i) => `  ${i + 1}. ${m.fullName} (${m.rollNo}) - ${m.department}`
-      ),
-    ];
-    navigator.clipboard.writeText(lines.join('\n'));
-    setCopiedRoster(true);
-    setTimeout(() => setCopiedRoster(false), 3000);
-  };
-
   const exportToExcel = () => {
-    const exportData = rows.map((r) => {
-      const memberNames = (r.team_members || []).map((m) => `${m.fullName} (${m.rollNo})`).join(', ');
-      return {
-        'Team Name': r.team_name,
-        'Leader Name': r.leader_name,
-        'Leader Email': r.leader_email,
-        'Leader Phone': r.leader_phone,
-        'Leader Roll No': r.leader_roll_no,
-        'Department & Class': r.leader_class_department,
-        'Total Squad Size': 1 + (r.team_members?.length || 0),
-        'Additional Members': memberNames,
-        'Registered At': new Date(r.created_at).toLocaleString(),
-      };
-    });
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const exportData = rows.map((row) => ({
+      'Team Name': row.team_name,
+      'Leader Name': row.leader_name,
+      'Roll Number': row.leader_roll_no,
+      'Class': row.class_name,
+      'Section': row.section,
+      'GitHub Link': `=HYPERLINK("${row.github_url}", "${row.github_url}")`,
+      'Google Drive PPT Link': `=HYPERLINK("${row.drive_url}", "${row.drive_url}")`,
+      'Submitted At': new Date(row.created_at).toLocaleString(),
+    }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Format formula cells so hyperlinks are immediately clickable
+    Object.keys(worksheet).forEach((cellKey) => {
+      if (cellKey.startsWith('!')) return;
+      const cell = worksheet[cellKey];
+      if (cell && typeof cell.v === 'string' && cell.v.startsWith('=')) {
+        cell.f = cell.v.slice(1);
+        delete cell.v;
+      }
+    });
+
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Registrations');
-    XLSX.writeFile(workbook, `Hackathon_Registrations_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions');
+    XLSX.writeFile(workbook, `Hackathon_Submissions_${dateStr}.xlsx`);
   };
 
   const logout = async () => {
@@ -228,14 +225,14 @@ export default function AdminRegistrationsPage() {
           </Link>
           <Link
             to="/admin/registrations"
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold bg-orange-400 text-slate-950 transition"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-slate-400 transition hover:bg-slate-800 hover:text-white"
           >
             <ClipboardList className="size-4" />
             Registrations
           </Link>
           <Link
             to="/admin/submissions"
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-bold bg-orange-400 text-slate-950 transition"
           >
             <UploadCloud className="size-4" />
             Submissions
@@ -256,18 +253,44 @@ export default function AdminRegistrationsPage() {
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-[#0b101a] px-5 py-5 sm:px-8">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-orange-300">
-              Operations / Registration Desk
+              Operations / Submissions Desk
             </p>
-            <h1 className="font-display text-2xl font-bold">Hackathon Registrations</h1>
+            <h1 className="font-display text-2xl font-bold">Hackathon Deliverables</h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            {/* Master Submissions Switch */}
+            <button
+              onClick={handleToggleSubmissions}
+              disabled={toggling}
+              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-semibold tracking-wide transition-all ${
+                submissionsOpen
+                  ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
+                  : 'border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20'
+              }`}
+              title="Toggle public submissions open/closed"
+            >
+              {submissionsOpen ? (
+                <>
+                  <ToggleRight className="size-5 text-emerald-400" />
+                  Submissions: OPEN
+                </>
+              ) : (
+                <>
+                  <ToggleLeft className="size-5 text-rose-400" />
+                  Submissions: CLOSED
+                </>
+              )}
+            </button>
+
+            {/* Export Excel Button */}
             <button
               onClick={exportToExcel}
               className="inline-flex items-center gap-2 rounded-xl bg-orange-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-orange-300"
             >
-              <Download className="size-4" /> Export Teams to Excel
+              <Download className="size-4" /> Export Submissions to Excel
             </button>
+
             <button
               onClick={logout}
               aria-label="Sign out"
@@ -278,7 +301,7 @@ export default function AdminRegistrationsPage() {
           </div>
         </header>
 
-        {/* Mobile Tabs */}
+        {/* Mobile Navigation Tabs */}
         <div className="flex gap-2 overflow-x-auto border-b border-slate-800 bg-[#0b101a] px-5 py-3 md:hidden">
           <Link
             to="/admin/dashboard"
@@ -288,13 +311,13 @@ export default function AdminRegistrationsPage() {
           </Link>
           <Link
             to="/admin/registrations"
-            className="rounded-xl bg-orange-400 px-4 py-2 text-xs font-bold text-slate-950"
+            className="rounded-xl px-4 py-2 text-xs text-slate-400 hover:text-white"
           >
             Registrations
           </Link>
           <Link
             to="/admin/submissions"
-            className="rounded-xl px-4 py-2 text-xs text-slate-400 hover:text-white"
+            className="rounded-xl bg-orange-400 px-4 py-2 text-xs font-bold text-slate-950"
           >
             Submissions
           </Link>
@@ -307,35 +330,37 @@ export default function AdminRegistrationsPage() {
             </div>
           )}
 
-          {/* Search Bar & Counter */}
+          {/* Search Bar & Summary Stats */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative max-w-md w-full">
               <Search className="absolute left-3.5 top-3.5 size-4 text-slate-500" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search team, leader, or roll number…"
+                placeholder="Search team, leader, roll no, or section…"
                 className="w-full rounded-xl border border-slate-700 bg-slate-900 py-2.5 pl-10 pr-4 text-sm text-white outline-none focus:border-orange-400"
               />
             </div>
+
             <div className="flex items-center gap-3 text-sm text-slate-400">
-              <span>Total Teams: <strong className="text-white font-mono">{rows.length}</strong></span>
+              <span>Total Submissions: <strong className="text-white font-mono">{rows.length}</strong></span>
               {query && (
                 <span>(Matching: <strong className="text-orange-300 font-mono">{filtered.length}</strong>)</span>
               )}
             </div>
           </div>
 
-          {/* Table */}
+          {/* Submissions Table with Edit and Delete Action Buttons */}
           <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-[#0b101a]">
-            <table className="w-full min-w-[850px] text-left text-sm">
+            <table className="w-full min-w-[950px] text-left text-sm">
               <thead className="border-b border-slate-800 text-xs uppercase tracking-wider text-slate-500 bg-slate-950/40">
                 <tr>
-                  <th className="p-4">Submitted</th>
+                  <th className="p-4">Submitted At</th>
                   <th className="p-4">Team Name</th>
                   <th className="p-4">Leader / Roll No</th>
-                  <th className="p-4">Department & Class</th>
-                  <th className="p-4">Squad Size</th>
+                  <th className="p-4">Class & Section</th>
+                  <th className="p-4">GitHub Repository</th>
+                  <th className="p-4">Google Drive PPT</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -343,10 +368,11 @@ export default function AdminRegistrationsPage() {
                 {filtered.map((row) => (
                   <tr key={row.id} className="border-b border-slate-800/70 hover:bg-slate-900/40 transition-colors">
                     <td className="p-4 text-xs text-slate-400 whitespace-nowrap">
-                      {new Date(row.created_at).toLocaleDateString([], {
+                      {new Date(row.created_at).toLocaleString([], {
                         month: 'short',
                         day: 'numeric',
-                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
                       })}
                     </td>
                     <td className="p-4 font-semibold text-white">{row.team_name}</td>
@@ -354,37 +380,45 @@ export default function AdminRegistrationsPage() {
                       <div className="font-medium text-slate-200">{row.leader_name}</div>
                       <div className="text-xs text-slate-500 font-mono">{row.leader_roll_no}</div>
                     </td>
-                    <td className="p-4 text-slate-300">{row.leader_class_department}</td>
                     <td className="p-4 text-slate-300">
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-800 px-2.5 py-1 text-xs text-orange-300 font-mono">
-                        <Users className="size-3" />
-                        1 + {row.team_members?.length ?? 0}
-                      </span>
+                      <div>{row.class_name}</div>
+                      <div className="text-xs text-slate-500">Sec: {row.section}</div>
+                    </td>
+                    <td className="p-4">
+                      <a
+                        href={row.github_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-orange-300 hover:border-orange-400 hover:text-orange-200 transition-colors"
+                      >
+                        <FolderGit2 className="size-3.5" /> Repo <ExternalLink className="size-3" />
+                      </a>
+                    </td>
+                    <td className="p-4">
+                      <a
+                        href={row.drive_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-cyan-300 hover:border-cyan-400 hover:text-cyan-200 transition-colors"
+                      >
+                        <Presentation className="size-3.5" /> Slides <ExternalLink className="size-3" />
+                      </a>
                     </td>
                     <td className="p-4 text-right">
                       <div className="inline-flex items-center gap-2">
                         <button
-                          onClick={() => setSelected(row)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-200 hover:border-orange-400 hover:text-white transition-colors"
-                          title="View all team members"
-                        >
-                          <Eye className="size-3.5 text-orange-400" />
-                          <span>View</span>
-                        </button>
-
-                        <button
                           onClick={() => handleStartEdit(row)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-200 hover:border-orange-400 hover:text-orange-300 transition-colors"
-                          title="Edit registration"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-xs font-medium text-slate-200 hover:border-orange-400 hover:text-orange-300 transition-colors"
+                          title="Edit submission details"
                         >
                           <Pencil className="size-3.5 text-orange-400" />
                           <span>Edit</span>
                         </button>
 
                         <button
-                          onClick={() => setDeletingRegistration(row)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-xs font-medium text-red-300 hover:bg-red-500/20 hover:border-red-500/60 transition-colors"
-                          title="Delete registration"
+                          onClick={() => setDeletingSubmission(row)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-xs font-medium text-red-300 hover:bg-red-500/20 hover:border-red-500/60 transition-colors"
+                          title="Delete submission"
                         >
                           <Trash2 className="size-3.5 text-red-400" />
                           <span>Delete</span>
@@ -395,96 +429,33 @@ export default function AdminRegistrationsPage() {
                 ))}
               </tbody>
             </table>
+
             {!filtered.length && (
               <div className="p-12 text-center text-sm text-slate-500">
-                {query ? 'No matching registrations found.' : 'No registrations found.'}
+                {query ? 'No matching deliverables found.' : 'No deliverables submitted yet.'}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* View Team Modal */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm"
-          onClick={() => setSelected(null)}
-        >
-          <section
-            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-8 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
-              <div>
-                <p className="font-mono text-xs uppercase tracking-widest text-orange-400">Team Profile</p>
-                <h2 className="mt-1 font-display text-2xl font-bold text-white">{selected.team_name}</h2>
-              </div>
-              <button
-                onClick={() => setSelected(null)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-4 text-sm">
-              <div className="rounded-2xl border border-slate-800 bg-[#0b101a] p-4">
-                <p className="font-mono text-xs uppercase tracking-wider text-orange-300 font-semibold mb-2">
-                  Leader (Primary Contact)
-                </p>
-                <p className="text-white font-medium text-base">{selected.leader_name}</p>
-                <p className="text-slate-400 mt-1">{selected.leader_email} · {selected.leader_phone}</p>
-                <p className="text-slate-400">Roll No: <span className="text-slate-200 font-mono">{selected.leader_roll_no}</span></p>
-                <p className="text-slate-400">Department & Class: <span className="text-slate-200">{selected.leader_class_department}</span></p>
-              </div>
-
-              {selected.team_members && selected.team_members.length > 0 && (
-                <div className="space-y-3">
-                  <p className="font-mono text-xs uppercase tracking-wider text-slate-400 font-semibold">
-                    Additional Members ({selected.team_members.length})
-                  </p>
-                  {selected.team_members.map((member, i) => (
-                    <div key={i} className="rounded-xl border border-slate-800 bg-[#0b101a] p-4">
-                      <p className="font-semibold text-orange-200">Member {i + 1}: {member.fullName}</p>
-                      <p className="text-slate-400 text-xs mt-1">Roll No: <span className="text-slate-200 font-mono">{member.rollNo}</span></p>
-                      <p className="text-slate-400 text-xs">Department: <span className="text-slate-200">{member.department}</span></p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
-                <button
-                  onClick={() => handleCopyRoster(selected)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-400 text-slate-950 font-bold text-xs hover:bg-orange-300 transition-colors"
-                >
-                  {copiedRoster ? <Check className="size-4" /> : <Copy className="size-4" />}
-                  <span>{copiedRoster ? 'Roster Copied!' : 'Copy Team Roster'}</span>
-                </button>
-              </div>
-            </div>
-          </section>
-        </div>
-      )}
-
-      {/* Edit Registration Modal */}
-      {editingRegistration && (
+      {/* Edit Submission Modal */}
+      {editingSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-3xl border border-slate-800 bg-[#0d1322] p-6 sm:p-8 shadow-2xl">
+          <div className="w-full max-w-2xl rounded-3xl border border-slate-800 bg-[#0d1322] p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
               <div>
                 <h3 className="font-display text-xl font-bold text-white flex items-center gap-2">
                   <Pencil className="size-5 text-orange-400" />
-                  Edit Team Registration
+                  Edit Deliverables
                 </h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  Editing team <strong className="text-orange-300">{editingRegistration.team_name}</strong>
+                  Editing submission for team <strong className="text-orange-300">{editingSubmission.team_name}</strong>
                 </p>
               </div>
 
               <button
-                onClick={() => setEditingRegistration(null)}
+                onClick={() => setEditingSubmission(null)}
                 className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
               >
                 <X className="size-5" />
@@ -525,33 +496,43 @@ export default function AdminRegistrationsPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Leader Email</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Class / Branch</label>
                   <input
                     required
-                    type="email"
-                    value={editForm.leader_email || ''}
-                    onChange={(e) => setEditForm({ ...editForm, leader_email: e.target.value })}
+                    value={editForm.class_name || ''}
+                    onChange={(e) => setEditForm({ ...editForm, class_name: e.target.value })}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-orange-400 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Leader Phone</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Section</label>
                   <input
                     required
-                    type="tel"
-                    value={editForm.leader_phone || ''}
-                    onChange={(e) => setEditForm({ ...editForm, leader_phone: e.target.value })}
+                    value={editForm.section || ''}
+                    onChange={(e) => setEditForm({ ...editForm, section: e.target.value })}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-orange-400 outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Department & Class</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">GitHub Repository URL</label>
                 <input
                   required
-                  value={editForm.leader_class_department || ''}
-                  onChange={(e) => setEditForm({ ...editForm, leader_class_department: e.target.value })}
+                  type="url"
+                  value={editForm.github_url || ''}
+                  onChange={(e) => setEditForm({ ...editForm, github_url: e.target.value })}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-orange-400 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Google Drive Presentation URL</label>
+                <input
+                  required
+                  type="url"
+                  value={editForm.drive_url || ''}
+                  onChange={(e) => setEditForm({ ...editForm, drive_url: e.target.value })}
                   className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-orange-400 outline-none"
                 />
               </div>
@@ -559,7 +540,7 @@ export default function AdminRegistrationsPage() {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
-                  onClick={() => setEditingRegistration(null)}
+                  onClick={() => setEditingSubmission(null)}
                   className="px-4 py-2.5 rounded-xl border border-slate-700 text-sm text-slate-300 hover:bg-slate-800 transition-colors"
                 >
                   Cancel
@@ -577,8 +558,8 @@ export default function AdminRegistrationsPage() {
         </div>
       )}
 
-      {/* Delete Registration Modal */}
-      {deletingRegistration && (
+      {/* Delete Confirmation Modal */}
+      {deletingSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-red-500/30 bg-[#0d1322] p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mb-4">
@@ -586,17 +567,17 @@ export default function AdminRegistrationsPage() {
             </div>
 
             <h3 className="font-display text-xl font-bold text-white mb-2">
-              Delete Team Registration?
+              Delete Deliverables?
             </h3>
             <p className="text-sm text-slate-300 mb-6 leading-relaxed">
-              Are you sure you want to permanently delete the registration for team{' '}
-              <strong className="text-white">"{deletingRegistration.team_name}"</strong> and all its members?
+              Are you sure you want to permanently delete the submitted deliverables for team{' '}
+              <strong className="text-white">"{deletingSubmission.team_name}"</strong>? This will remove their repository and slide deck links.
             </p>
 
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setDeletingRegistration(null)}
+                onClick={() => setDeletingSubmission(null)}
                 className="px-4 py-2.5 rounded-xl border border-slate-700 text-sm text-slate-300 hover:bg-slate-800 transition-colors"
               >
                 Cancel

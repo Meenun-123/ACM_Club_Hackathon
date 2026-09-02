@@ -35,14 +35,14 @@ export default function RegisterPage() {
         </div>
       </section>
 
-      {/* Form */}
-      <section className="relative section-pad pt-10 overflow-hidden">
+      {/* Form Section */}
+      <section className="relative section-pad pt-6 pb-28 overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" aria-hidden="true" />
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-orange-500/10 blur-[140px] rounded-full"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-orange-500/10 blur-[160px] rounded-full"
           aria-hidden="true"
         />
-        <div className="relative max-w-2xl mx-auto px-6">
+        <div className="relative max-w-5xl mx-auto px-6 sm:px-8">
           <RegistrationForm />
         </div>
       </section>

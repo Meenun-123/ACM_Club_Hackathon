@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { EVENT, NAV_LINKS } from '@/lib/constants';
+import AcmLogo from '@/components/ui/AcmLogo';
 
 export default function Footer() {
   return (
@@ -9,14 +10,9 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-2">
-            <div className="font-display text-2xl font-bold text-white">
-              HACK <span className="text-gradient-orange">ASCENSION</span> 2026
-            </div>
-            <p className="mt-2 text-orange-400 font-display text-sm tracking-wide uppercase">
-              {EVENT.tagline}
-            </p>
-            <p className="mt-4 text-sm text-slate-400 max-w-sm leading-relaxed">
-              Organized by {EVENT.org}, {EVENT.school}, {EVENT.university}.
+            <AcmLogo variant="footer" />
+            <p className="mt-4 text-sm text-slate-400 max-w-md leading-relaxed">
+              Empowering students through technology, hands-on workshops, competitive coding, and flagship hackathons including <span className="text-white font-medium">Hack Ascension 2026</span>.
             </p>
           </div>
 
@@ -38,7 +34,12 @@ export default function Footer() {
               ))}
               <li>
                 <Link to="/register" className="text-sm text-slate-400 hover:text-orange-400 transition-colors">
-                  Register
+                  Register Team
+                </Link>
+              </li>
+              <li>
+                <Link to="/submit" className="text-sm text-slate-400 hover:text-orange-400 transition-colors">
+                  Submit Deliverables
                 </Link>
               </li>
             </ul>
@@ -57,10 +58,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-electric-500/10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-slate-500">
-            © 2026 Hack Ascension. All rights reserved.
+            © 2026 ACM Student Chapter. All rights reserved.
           </p>
           <p className="text-xs text-slate-500">
-            ACM Student Chapter · Amrita Vishwa Vidyapeetham, Nagercoil
+            Amrita Vishwa Vidyapeetham, Nagercoil Campus · School of Computing
           </p>
         </div>
       </div>

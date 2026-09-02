@@ -8,9 +8,11 @@ import SchedulePage from '@/pages/SchedulePage';
 import CoordinatorsPage from '@/pages/CoordinatorsPage';
 import RegisterPage from '@/pages/RegisterPage';
 import SuccessPage from '@/pages/SuccessPage';
+import SubmitPage from '@/pages/SubmitPage';
 import AdminLoginPage from '@/pages/AdminLoginPage';
 import AdminDashboardPage from '@/pages/AdminDashboardPage';
 import AdminRegistrationsPage from '@/pages/AdminRegistrationsPage';
+import AdminSubmissionsPage from '@/pages/AdminSubmissionsPage';
 
 function App() {
   return (
@@ -25,9 +27,11 @@ function App() {
           <Route path="/coordinators" element={<CoordinatorsPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/register/success" element={<SuccessPage />} />
+          <Route path="/submit" element={<SubmitPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/registrations" element={<AdminRegistrationsPage />} />
+          <Route path="/admin/submissions" element={<AdminSubmissionsPage />} />
           <Route path="*" element={<HomePage />} />
         </Route>
       </Routes>

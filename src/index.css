@@ -166,6 +166,12 @@
   .animate-spin-slow {
     animation: spin 14s linear infinite;
   }
+  .animate-scanline {
+    animation: scanline 8s ease-in-out infinite;
+  }
+  .animate-beacon {
+    animation: beacon 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -182,6 +188,16 @@
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
+  }
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    50% { transform: translateY(100%); }
+    100% { transform: translateY(-100%); }
+  }
+  @keyframes beacon {
+    0% { transform: scale(0.95); opacity: 0.9; }
+    50% { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(0.95); opacity: 0; }
   }
 }
 

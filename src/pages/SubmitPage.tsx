@@ -14,11 +14,11 @@ export default function SubmitPage() {
 
   useEffect(() => {
     let active = true;
-    supabase.from('system_settings').select('submissions_open').eq('id', true).maybeSingle().then(({ data }) => {
-      if (active && data) setOpen(Boolean(data.submissions_open));
+    supabase.from('system_settings').select('key,value').eq('key', 'submissions_open').maybeSingle().then(({ data }) => {
+      if (active && data) setOpen(data.value !== false);
       if (active) setLoading(false);
     });
-    const channel = supabase.channel('submission-settings').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'system_settings' }, (payload) => setOpen(Boolean(payload.new.submissions_open))).subscribe();
+    const channel = supabase.channel('submission-settings').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'system_settings' }, (payload) => setOpen(payload.new.value !== false)).subscribe();
     return () => { active = false; void supabase.removeChannel(channel); };
   }, []);
 

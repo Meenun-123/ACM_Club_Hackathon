@@ -114,12 +114,16 @@ export default function AdminRegistrationsPage() {
     setSavingEdit(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('hackathon_registrations')
         .update(editForm)
-        .eq('id', editingRegistration.id);
+        .eq('id', editingRegistration.id)
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('Database blocked update. Please ensure Row Level Security (RLS) policies are active.');
+      }
 
       setRows((prev) =>
         prev.map((item) =>
@@ -142,12 +146,16 @@ export default function AdminRegistrationsPage() {
     setDeletingBusy(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('hackathon_registrations')
         .delete()
-        .eq('id', deletingRegistration.id);
+        .eq('id', deletingRegistration.id)
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('Database blocked deletion. Please ensure Row Level Security (RLS) policies are active.');
+      }
 
       setRows((prev) => prev.filter((item) => item.id !== deletingRegistration.id));
       setMessage(`Deleted registration for team "${deletingRegistration.team_name}".`);

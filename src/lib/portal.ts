@@ -188,8 +188,12 @@ export async function updateSubmission(id: string, updates: Partial<SubmissionRe
   const { data, error } = await supabase
     .from('hackathon_submissions')
     .update(updates)
-    .eq('id', id);
+    .eq('id', id)
+    .select();
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error('Database blocked update. Please check Row Level Security (RLS) policies in Supabase.');
+  }
   return data;
 }
 
@@ -197,8 +201,12 @@ export async function deleteSubmission(id: string) {
   const { data, error } = await supabase
     .from('hackathon_submissions')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select();
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error('Database blocked deletion. Please check Row Level Security (RLS) policies in Supabase.');
+  }
   return data;
 }
 

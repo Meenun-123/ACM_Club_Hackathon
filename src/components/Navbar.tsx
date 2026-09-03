@@ -14,7 +14,9 @@ export default function Navbar() {
     const onScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          setScrolled(window.scrollY > 20);
+          const top = window.scrollY;
+          // Smooth hysteresis prevents jitter when scrolling near top boundary
+          setScrolled((prev) => (prev ? top > 20 : top > 45));
           ticking = false;
         });
         ticking = true;
@@ -52,29 +54,29 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed left-0 right-0 z-40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed left-0 right-0 z-40 transform-gpu transition-all duration-300 ease-out will-change-transform ${
           scrolled
             ? 'top-2 sm:top-3 px-3 sm:px-8'
             : 'top-0 px-4 sm:px-10 pt-2'
         }`}
       >
         <div
-          className={`mx-auto flex w-full max-w-8xl items-center justify-between gap-6 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`mx-auto flex w-full max-w-8xl items-center justify-between gap-6 transform-gpu transition-all duration-300 ease-out ${
             scrolled
-              ? 'rounded-2xl border border-slate-700/60 bg-slate-950/85 px-6 sm:px-8 py-3.5 shadow-[0_15px_40px_rgba(2,6,23,0.55)] backdrop-blur-xl'
+              ? 'rounded-2xl border border-slate-700/70 bg-slate-950/90 px-6 sm:px-8 py-3.5 shadow-[0_15px_35px_rgba(2,6,23,0.6)] backdrop-blur-md'
               : 'border-transparent bg-transparent py-5'
           }`}
         >
           {/* ACM Chapter Branding */}
           <Link
             to="/"
-            className="flex shrink-0 items-center group transition-transform duration-300 hover:scale-[1.02] active:scale-95"
+            className="flex shrink-0 items-center group transition-transform duration-200 hover:scale-[1.02] active:scale-95"
             aria-label="ACM Student Chapter Amrita Nagercoil home"
           >
             <AcmLogo variant="navbar" />
           </Link>
 
-          {/* Desktop Navigation Links (Spacious & Clean) */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden xl:flex items-center gap-2 shrink-0">
             {NAV_LINKS.map((link) => {
               const active = isActive(link.to);
@@ -84,7 +86,7 @@ export default function Navbar() {
                   to={link.to}
                   className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-xl flex items-center gap-2 ${
                     active
-                      ? 'text-white bg-slate-800/80 border border-slate-700/80 shadow-md font-semibold'
+                      ? 'text-white bg-slate-800/80 border border-slate-700/80 shadow-sm font-semibold'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                   }`}
                 >
@@ -97,7 +99,7 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Desktop Action Buttons (Spacious & Unconstrained) */}
+          {/* Desktop Action Buttons */}
           <div className="hidden lg:flex items-center gap-5 shrink-0">
             {/* Submit Deliverables Link */}
             <Link
@@ -111,7 +113,7 @@ export default function Navbar() {
             {/* Prominent Hackathon Register Button */}
             <Link
               to="/register"
-              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 bg-[length:200%_auto] text-white text-sm font-display font-bold uppercase tracking-wider px-6 py-3 rounded-xl hover:bg-[position:right_center] glow-orange hover:shadow-[0_0_36px_rgba(249,115,22,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 ease-out shadow-lg"
+              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 bg-[length:200%_auto] text-white text-sm font-display font-bold uppercase tracking-wider px-6 py-3 rounded-xl hover:bg-[position:right_center] glow-orange hover:shadow-[0_0_32px_rgba(249,115,22,0.55)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 ease-out shadow-lg"
             >
               <Sparkles className="w-4 h-4" />
               REGISTER NOW
@@ -142,7 +144,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       <div
-        className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed inset-0 z-50 xl:hidden transition-opacity duration-300 ease-out ${
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -152,9 +154,9 @@ export default function Navbar() {
           onClick={() => setMobileOpen(false)}
         />
 
-        {/* Drawer Content with dynamic viewport height and safe area */}
+        {/* Drawer Content */}
         <div
-          className={`absolute right-0 top-0 h-[100dvh] w-[88%] max-w-sm glass-strong border-l border-slate-800 p-6 flex flex-col justify-between overflow-y-auto transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`absolute right-0 top-0 h-[100dvh] w-[88%] max-w-sm glass-strong border-l border-slate-800 p-6 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-out ${
             mobileOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
@@ -182,7 +184,7 @@ export default function Navbar() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
+                    className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-[0.98] ${
                       active
                         ? 'text-white bg-slate-800 border border-slate-700 font-semibold'
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -200,7 +202,7 @@ export default function Navbar() {
           <div className="space-y-3 pt-6 border-t border-slate-800/80 pb-2">
             <Link
               to="/register"
-              className="flex items-center justify-center gap-2.5 w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-display font-bold text-sm px-6 py-4 rounded-xl glow-orange hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] transition-all duration-300 active:scale-95 shadow-lg"
+              className="flex items-center justify-center gap-2.5 w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-display font-bold text-sm px-6 py-4 rounded-xl glow-orange hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] transition-all duration-200 active:scale-95 shadow-lg"
             >
               <Sparkles className="w-4 h-4" />
               REGISTER FOR HACKATHON
